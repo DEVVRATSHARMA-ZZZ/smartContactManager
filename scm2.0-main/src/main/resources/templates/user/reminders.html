@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{base :: parent(~{::section}, ~{::title}, ~{})}">
+
+<head>
+    <title>Reminders</title>
+</head>
+
+<body>
+<section class="sm:pl-64 pt-20 min-h-screen bg-gray-50 px-6 py-8">
+
+    <div th:if="${loggedInUser}">
+        <div th:replace="~{user/sidebar :: sidebar}"></div>
+    </div>
+
+    <div class="max-w-3xl">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">Call reminders</h1>
+        <p class="text-gray-500 mb-6">
+            Set a time to call someone. When it arrives, a popup appears on this site and an email
+            is sent to your account. A text is also sent to your phone number when SMS is configured.
+        </p>
+
+        <div th:if="${successMessage}"
+             th:text="${successMessage}"
+             class="mb-4 text-green-700 bg-green-100 p-3 rounded-lg"></div>
+        <div th:if="${errorMessage}"
+             th:text="${errorMessage}"
+             class="mb-4 text-red-700 bg-red-100 p-3 rounded-lg"></div>
+
+        <div th:if="${#lists.isEmpty(contacts)}" class="bg-white rounded-xl shadow p-6 mb-6">
+            <p class="text-gray-500">Add a contact before setting a reminder.</p>
+            <a th:href="@{/user/contacts/add}" class="text-blue-600 inline-block mt-3">Add a contact</a>
+        </div>
+
+        <form th:unless="${#lists.isEmpty(contacts)}"
+              th:action="@{/user/reminders}"
+              method="post"
+              class="bg-white rounded-xl shadow p-6 space-y-4 mb-8">
+
+            <div>
+                <label for="contactId" class="block text-sm text-gray-600 mb-1">Who to call</label>
+                <select id="contactId" name="contactId" required
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                    <option th:each="contact : ${contacts}"
+                            th:value="${contact.id}"
+                            th:text="${contact.name + ' · ' + (contact.phoneNumber != null ? contact.phoneNumber : 'no phone')}">
+                        Contact
+                    </option>
+                </select>
+            </div>
+
+            <div>
+                <label for="objective" class="block text-sm text-gray-600 mb-1">Why you are calling</label>
+                <input id="objective" name="objective" required maxlength="300"
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2"
+                       placeholder="Follow up on the project quote"/>
+            </div>
+
+            <div>
+                <label for="remindAt" class="block text-sm text-gray-600 mb-1">When</label>
+                <input id="remindAt" name="remindAt" type="datetime-local" required
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2"/>
+            </div>
+
+            <button type="submit"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg">
+                Save reminder
+            </button>
+            <p class="text-sm text-gray-500" th:if="${smsConfigured}">
+                Texts will go to the phone number on your profile.
+            </p>
+            <p class="text-sm text-gray-500" th:unless="${smsConfigured}">
+                Phone texts are not configured, so the reminder is emailed to you.
+            </p>
+        </form>
+
+        <div class="bg-white rounded-xl shadow p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Your reminders</h2>
+            <p th:if="${#lists.isEmpty(reminders)}" class="text-gray-500">No upcoming reminders.</p>
+            <div th:unless="${#lists.isEmpty(reminders)}" class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                    <tr class="border-b text-gray-500">
+                        <th class="py-3 pr-4">When</th>
+                        <th class="py-3 pr-4">Contact</th>
+                        <th class="py-3">Objective</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="reminder : ${reminders}" class="border-b last:border-0">
+                        <td class="py-3 pr-4" th:text="${#strings.replace(reminder.remindAt, 'T', ' ')}">
+                            Time
+                        </td>
+                        <td class="py-3 pr-4" th:text="${reminder.contact != null ? reminder.contact.name : 'Contact'}">
+                            Name
+                        </td>
+                        <td class="py-3" th:text="${reminder.objective}">Objective</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</section>
+</body>
+</html>

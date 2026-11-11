@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{base :: parent(~{::section}, ~{::title}, ~{})}">
+
+<head>
+    <title>Direct Message</title>
+</head>
+
+<body>
+<section class="sm:pl-64 pt-20 min-h-screen bg-gray-50 px-6 py-8">
+
+    <div th:if="${loggedInUser}">
+        <div th:replace="~{user/sidebar :: sidebar}"></div>
+    </div>
+
+    <div class="max-w-2xl">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">Direct Message</h1>
+        <p class="text-gray-500 mb-6">
+            Send a note to one of your contacts. A text goes to their phone when SMS is configured.
+            Otherwise it is emailed to the address saved on the contact.
+        </p>
+
+        <div th:if="${successMessage}"
+             th:text="${successMessage}"
+             class="mb-4 text-green-700 bg-green-100 p-3 rounded-lg"></div>
+        <div th:if="${errorMessage}"
+             th:text="${errorMessage}"
+             class="mb-4 text-red-700 bg-red-100 p-3 rounded-lg"></div>
+
+        <div th:if="${#lists.isEmpty(contacts)}" class="bg-white rounded-xl shadow p-6">
+            <p class="text-gray-500">Add a contact before sending a message.</p>
+            <a th:href="@{/user/contacts/add}" class="text-blue-600 inline-block mt-3">Add a contact</a>
+        </div>
+
+        <form th:unless="${#lists.isEmpty(contacts)}"
+              th:action="@{/user/messages}"
+              method="post"
+              class="bg-white rounded-xl shadow p-6 space-y-4">
+
+            <div>
+                <label for="contactId" class="block text-sm text-gray-600 mb-1">Contact</label>
+                <select id="contactId" name="contactId" required
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                    <option th:each="contact : ${contacts}"
+                            th:value="${contact.id}"
+                            th:text="${contact.name + ' · ' + (contact.phoneNumber != null ? contact.phoneNumber : 'no phone')}">
+                        Contact
+                    </option>
+                </select>
+            </div>
+
+            <div>
+                <label for="message" class="block text-sm text-gray-600 mb-1">Message</label>
+                <textarea id="message" name="message" required maxlength="500" rows="5"
+                          class="w-full border border-gray-300 rounded-lg px-3 py-2"
+                          placeholder="Write your message"></textarea>
+            </div>
+
+            <button type="submit"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg">
+                Send message
+            </button>
+            <p class="text-sm text-gray-500" th:if="${smsConfigured}">Phone texts are turned on.</p>
+            <p class="text-sm text-gray-500" th:unless="${smsConfigured}">
+                Phone texts are not configured, so messages are sent by email.
+            </p>
+        </form>
+    </div>
+
+</section>
+</body>
+</html>

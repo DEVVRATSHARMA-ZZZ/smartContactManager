@@ -1,0 +1,51 @@
+services:
+  mysql:
+    image: mysql:8
+    container_name: mysql_db_docker
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: scm20
+    ports:
+      - "3307:3306"
+
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: 123456
+
+    ports:
+      - "8081:80"
+    depends_on:
+      - mysql
+  springboot:
+    build: .
+    container_name: scm_springboot_project
+    environment:
+      SERVER_PORT: 8080
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DB: scm20
+      MYSQL_USER: root
+      MYSQL_PASSWORD: 123456
+      EMAIL_HOST: smtp.gmail.com
+      EMAIL_PORT: 587
+      EMAIL_USERNAME: dev1234567zzz@gmail.com
+      EMAIL_PASSWORD: lzdjqjeysypjvqfa
+      EMAIL_DOMAIN: dev1234567zzz@gmail.com
+      CLOUDINARY_API_KEY: 835354624841165
+      CLOUDINARY_API_SECRET: ECrkTQ113Z4rgmhmtue0GWh6F_Y
+      CLOUDINARY_NAME: zrhalts9
+    ports:
+      - "8082:8080"
+    depends_on:
+      - mysql
+volumes:
+  mysql_data:
