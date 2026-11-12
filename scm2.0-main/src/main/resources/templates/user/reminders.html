@@ -75,20 +75,20 @@
             </p>
         </form>
 
-        <div class="bg-white rounded-xl shadow p-6">
-            <h2 class="text-xl font-bold text-gray-800 mb-4">Your reminders</h2>
+        <div class="bg-white dark:bg-gray-800 dark:text-white rounded-xl shadow p-6">
+            <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-4">Your reminders</h2>
             <p th:if="${#lists.isEmpty(reminders)}" class="text-gray-500">No upcoming reminders.</p>
             <div th:unless="${#lists.isEmpty(reminders)}" class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead>
-                    <tr class="border-b text-gray-500">
+                    <tr class="border-b text-gray-500 dark:text-gray-300">
                         <th class="py-3 pr-4">When</th>
                         <th class="py-3 pr-4">Contact</th>
                         <th class="py-3">Objective</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="reminder : ${reminders}" class="border-b last:border-0">
+                    <tr th:each="reminder : ${reminders}" class="border-b border-gray-200 dark:border-gray-700 last:border-0 text-gray-800 dark:text-white">
                         <td class="py-3 pr-4" th:text="${#strings.replace(reminder.remindAt, 'T', ' ')}">
                             Time
                         </td>
