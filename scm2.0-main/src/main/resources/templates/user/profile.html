@@ -43,9 +43,8 @@
                     <div class="relative mb-4">
 
                         <img id="profilePreview"
-                             th:src="${(loggedInUser.profilePic != null and !#strings.isEmpty(loggedInUser.profilePic)) ? loggedInUser.profilePic : '/images/telephone.png'}"
-                             src="/images/telephone.png"
-                             onerror="this.onerror=null; this.src='/images/telephone.png'"
+                             th:if="${loggedInUser.profilePic != null and !#strings.isEmpty(loggedInUser.profilePic)}"
+                             th:src="${loggedInUser.profilePic}"
                              alt="Profile Photo"
                              class="w-44 h-44 rounded-full shadow-lg object-cover border-4 border-blue-500">
 

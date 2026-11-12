@@ -25,11 +25,11 @@ import com.scm.repsitories.ReminderRepo;
 import com.scm.services.ContactService;
 import com.scm.services.UserService;
 import com.scm.services.impl.SmsService;
-
+import java.time.ZoneId;
 @Controller
 @RequestMapping("/user/reminders")
 public class ReminderController {
-
+    private static final ZoneId APP_ZONE = ZoneId.of("Asia/Kolkata");
     private final UserService userService;
     private final ContactService contactService;
     private final ReminderRepo reminderRepo;
@@ -47,10 +47,10 @@ public class ReminderController {
     public String reminders(Model model, Authentication authentication) {
         User user = currentUser(authentication);
         reminderRepo.deleteAll(
-                reminderRepo.findByRemindAtLessThanEqualAndNotifiedTrueAndPopupPendingFalse(LocalDateTime.now()));
+                reminderRepo.findByRemindAtLessThanEqualAndNotifiedTrueAndPopupPendingFalse(LocalDateTime.now(APP_ZONE)));
         model.addAttribute("contacts", contactService.getByUserId(user.getUserId()));
         model.addAttribute("reminders",
-                reminderRepo.findByUserAndRemindAtAfterOrderByRemindAtAsc(user, LocalDateTime.now()));
+                reminderRepo.findByUserAndRemindAtAfterOrderByRemindAtAsc(user, LocalDateTime.now(APP_ZONE)));
         model.addAttribute("smsConfigured", smsService.isConfigured());
         return "user/reminders";
     }
@@ -77,7 +77,7 @@ public class ReminderController {
             redirectAttributes.addFlashAttribute("errorMessage", "Choose a valid date and time.");
             return "redirect:/user/reminders";
         }
-        if (!when.isAfter(LocalDateTime.now())) {
+        if (!when.isAfter(LocalDateTime.now(APP_ZONE))) {
             redirectAttributes.addFlashAttribute("errorMessage", "Choose a time in the future.");
             return "redirect:/user/reminders";
         }

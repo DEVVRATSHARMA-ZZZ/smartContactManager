@@ -14,10 +14,11 @@ import com.scm.entities.Reminder;
 import com.scm.entities.User;
 import com.scm.repsitories.ReminderRepo;
 import com.scm.services.EmailService;
+import java.time.ZoneId;
 
 @Service
 public class ReminderService {
-
+    private static final ZoneId APP_ZONE = ZoneId.of("Asia/Kolkata");
     private Logger logger = LoggerFactory.getLogger(ReminderService.class);
 
     private final ReminderRepo reminderRepo;
@@ -33,7 +34,7 @@ public class ReminderService {
     @Scheduled(fixedDelay = 30000)
     @Transactional
     public void dispatchDueReminders() {
-        List<Reminder> due = reminderRepo.findByNotifiedFalseAndRemindAtLessThanEqual(LocalDateTime.now());
+        List<Reminder> due = reminderRepo.findByNotifiedFalseAndRemindAtLessThanEqual(LocalDateTime.now(APP_ZONE));
         for (Reminder reminder : due) {
             notifyOwner(reminder);
             reminder.setNotified(true);
@@ -41,7 +42,7 @@ public class ReminderService {
             reminderRepo.save(reminder);
         }
         reminderRepo.deleteAll(
-                reminderRepo.findByRemindAtLessThanEqualAndNotifiedTrueAndPopupPendingFalse(LocalDateTime.now()));
+                reminderRepo.findByRemindAtLessThanEqualAndNotifiedTrueAndPopupPendingFalse(LocalDateTime.now(APP_ZONE)));
     }
 
     private void notifyOwner(Reminder reminder) {

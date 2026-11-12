@@ -40,10 +40,11 @@
             <div>
                 <label for="contactId" class="block text-sm text-gray-600 mb-1">Who to call</label>
                 <select id="contactId" name="contactId" required
-                        class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-900 dark:bg-gray-700 dark:text-white">
                     <option th:each="contact : ${contacts}"
                             th:value="${contact.id}"
-                            th:text="${contact.name + ' · ' + (contact.phoneNumber != null ? contact.phoneNumber : 'no phone')}">
+                            th:text="${contact.name + ' · ' + (contact.phoneNumber != null ? contact.phoneNumber : 'no phone')}"
+                            class="bg-white text-gray-900 dark:bg-gray-700 dark:text-white">
                         Contact
                     </option>
                 </select>
@@ -52,14 +53,14 @@
             <div>
                 <label for="objective" class="block text-sm text-gray-600 mb-1">Why you are calling</label>
                 <input id="objective" name="objective" required maxlength="300"
-                       class="w-full border border-gray-300 rounded-lg px-3 py-2"
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
                        placeholder="Follow up on the project quote"/>
             </div>
 
             <div>
                 <label for="remindAt" class="block text-sm text-gray-600 mb-1">When</label>
                 <input id="remindAt" name="remindAt" type="datetime-local" required
-                       class="w-full border border-gray-300 rounded-lg px-3 py-2"/>
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"/>
             </div>
 
             <button type="submit"
