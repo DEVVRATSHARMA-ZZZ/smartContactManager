@@ -1,0 +1,908 @@
+# Smart Contact Manager (SCM)
+
+A cloud-deployed contact management web application built using **Java, Spring Boot, Spring Security, Thymeleaf, and MySQL-compatible TiDB**.
+
+The application allows users to register, securely log in, manage their contacts, maintain their profiles, and schedule reminders for contacting people.
+
+**Live Application:** https://smartcontactmanager-o8o4.onrender.com  
+**GitHub Repository:** https://github.com/DEVVRATSHARMA-ZZZ/smartContactManager
+
+---
+
+## 1. Project Overview
+
+Smart Contact Manager is a web-based application designed to help users store, organize, and manage their personal or professional contacts in one place.
+
+Instead of maintaining contacts manually, users can access their contact information through an authenticated web application.
+
+The application also provides scheduled call reminders, email notifications, profile management, and social login functionality.
+
+### Main Features
+
+- User registration and login.
+- Email verification during registration.
+- Google OAuth 2.0 login.
+- Password encryption using BCrypt.
+- Secure user-specific contact management.
+- Add, view, update, and delete contacts.
+- Profile management and profile picture support.
+- Cloud-based image storage using Cloudinary.
+- Contact reminders with scheduled notifications.
+- Reminder popups and email notifications.
+- Optional SMS notification integration.
+- Light and dark theme support.
+- Responsive user interface.
+
+## 2. Technology Stack
+
+| Technology | Purpose |
+|---|---|
+| Java 21 | Backend programming language |
+| Spring Boot 3.2.5 | Application framework |
+| Spring MVC | Request handling and controllers |
+| Spring Security | Authentication and authorization |
+| Spring Data JPA | Database operations |
+| Hibernate | ORM implementation |
+| MySQL Connector/J | Database connectivity |
+| TiDB Cloud Starter | Cloud-hosted MySQL-compatible database |
+| Thymeleaf | Server-side HTML rendering |
+| HTML, CSS, JavaScript | Frontend development |
+| Tailwind CSS | Utility-first styling |
+| Flowbite | UI components |
+| Cloudinary | Profile image storage |
+| Google OAuth 2.0 | Google authentication |
+| Gmail API | Email sending integration |
+| Maven | Dependency management and build |
+| Docker | Application containerization |
+| Git and GitHub | Version control and source hosting |
+| Render | Cloud deployment |
+
+## 3. Application Architecture
+
+The project follows a layered Spring Boot architecture.
+
+```text
+                 USER / BROWSER
+                       |
+                       v
+              Thymeleaf Frontend
+                       |
+                       v
+                 Spring MVC
+                       |
+                       v
+                  Controllers
+                       |
+                       v
+                   Services
+                       |
+                       v
+             Spring Data JPA
+                       |
+                       v
+                Hibernate ORM
+                       |
+                       v
+                 TiDB Cloud
+```
+
+External integrations:
+
+```text
+Spring Boot Application
+       |
+       |---- Google OAuth 2.0
+       |
+       |---- Gmail API
+       |
+       |---- Cloudinary
+       |
+       |---- Optional SMS Provider
+       |
+       |---- TiDB Cloud Database
+```
+
+### Understanding the layers
+
+**1. Controller Layer**
+
+Controllers receive HTTP requests, validate input, communicate with services, and return the appropriate Thymeleaf view or response.
+
+**2. Service Layer**
+
+Contains the application's business logic. It separates business operations from HTTP request handling and database access.
+
+**3. Repository Layer**
+
+Spring Data JPA repositories perform database operations without requiring manually written SQL for every CRUD operation.
+
+**4. Entity Layer**
+
+Entities represent database tables and their relationships.
+
+**5. View Layer**
+
+Thymeleaf templates render dynamic HTML pages using data received from controllers.
+
+## 4. Backend Technologies Explained
+
+### Java and Spring Boot
+
+Java is used to implement the application logic.
+
+Spring Boot simplifies application development by providing:
+
+- Auto-configuration.
+- Dependency injection.
+- Embedded web server.
+- REST and MVC support.
+- Integration with Spring Security and Spring Data JPA.
+
+### Spring MVC
+
+Spring MVC handles incoming HTTP requests.
+
+For example:
+
+```text
+Browser
+   |
+   v
+HTTP Request
+   |
+   v
+Controller
+   |
+   v
+Service
+   |
+   v
+Repository
+   |
+   v
+Database
+```
+
+### Spring Data JPA and Hibernate
+
+JPA provides an abstraction for interacting with relational databases.
+
+Hibernate is the ORM implementation used to map Java entities to database tables.
+
+For example:
+
+```java
+@Entity
+public class User {
+
+    @Id
+    private String userId;
+
+    private String name;
+
+    private String email;
+
+    private String password;
+}
+```
+
+Instead of manually writing SQL for every operation, repositories provide methods for common database operations.
+
+## 5. Authentication and Security
+
+Spring Security is responsible for protecting user accounts and private application pages.
+
+### A. Normal Registration and Login
+
+Registration process:
+
+1. User opens the registration page.
+2. User enters registration details.
+3. Spring MVC receives the form submission.
+4. Input validation is performed.
+5. User information is processed through the service layer.
+6. Password is encoded using BCrypt.
+7. User information is stored in the database.
+8. Email verification is used to activate the account.
+
+### B. BCrypt Password Encryption
+
+The application uses:
+
+```java
+new BCryptPasswordEncoder();
+```
+
+Passwords are stored as BCrypt hashes rather than plain text.
+
+BCrypt is a one-way password hashing algorithm, so the original password is not stored in the database.
+
+### C. Spring Security Authentication
+
+Important components:
+
+- `SecurityConfig`: Defines security rules.
+- `SecurityFilterChain`: Configures HTTP security.
+- `DaoAuthenticationProvider`: Handles database-backed authentication.
+- `UserDetailsService`: Loads user information.
+- `PasswordEncoder`: Verifies encoded passwords.
+- `OAuthAuthenticationSuccessHandler`: Handles successful OAuth authentication.
+
+Private application URLs under `/user/**` require authentication.
+
+### D. Google OAuth 2.0
+
+Google OAuth allows users to authenticate through their Google accounts.
+
+Basic flow:
+
+1. User clicks Continue with Google.
+2. Application redirects the user to Google.
+3. Google authenticates the user.
+4. Google redirects back to the configured callback URL.
+5. Spring Security processes the OAuth response.
+6. The application's success handler processes the authenticated user.
+
+Production callback URL:
+
+```text
+https://smartcontactmanager-o8o4.onrender.com/login/oauth2/code/google
+```
+
+The redirect URI must match the URI registered in Google Cloud Console.
+
+## 6. Database: TiDB Cloud Starter
+
+The application uses **TiDB Cloud Starter** as its cloud database.
+
+TiDB is a distributed SQL database compatible with the MySQL protocol.
+
+This allows a Spring Boot application using the MySQL JDBC driver to connect to TiDB.
+
+### Why TiDB?
+
+- Cloud-hosted relational database.
+- MySQL compatibility.
+- Supports SQL queries.
+- Works with Spring Data JPA and Hibernate.
+- Provides a database service separate from the application server.
+
+### Database Connection
+
+The application uses MySQL JDBC connectivity:
+
+```properties
+spring.datasource.url=jdbc:mysql://HOST:PORT/DATABASE?sslMode=VERIFY_IDENTITY
+spring.datasource.username=USERNAME
+spring.datasource.password=PASSWORD
+```
+
+In production, connection details are supplied through environment variables rather than hardcoded credentials.
+
+### Hibernate Configuration
+
+```properties
+spring.jpa.hibernate.ddl-auto=update
+```
+
+This tells Hibernate to update the database schema based on entity changes.
+
+**Important:** `ddl-auto=update` is convenient during development, but production systems should use controlled database migrations as the application grows.
+
+### Database Access Using DBeaver
+
+DBeaver was used as a database management tool.
+
+It helps with:
+
+- Connecting to the TiDB database.
+- Viewing database schemas and tables.
+- Inspecting stored user and contact records.
+- Executing SQL queries.
+- Debugging database-related issues.
+
+DBeaver is a database client; it does not host the database.
+
+## 7. Cloudinary Integration
+
+Cloudinary is used to store profile images.
+
+Instead of storing image files directly inside the application server, the application uploads images to Cloudinary and stores the resulting image URL in the database.
+
+Flow:
+
+```text
+User selects image
+       |
+       v
+Spring Boot receives image
+       |
+       v
+Cloudinary upload
+       |
+       v
+Image URL returned
+       |
+       v
+URL stored in database
+       |
+       v
+Image displayed in profile
+```
+
+Benefits:
+
+- Avoids storing large image files in the application database.
+- Provides cloud-based image storage.
+- Makes profile images accessible through image URLs.
+
+## 8. Email Integration
+
+The application uses Gmail API integration for sending emails.
+
+Email functionality is used for account-related communication and reminder notifications.
+
+The Gmail API credentials are supplied through environment variables.
+
+```text
+GMAIL_CLIENT_ID
+GMAIL_CLIENT_SECRET
+GMAIL_REFRESH_TOKEN
+GMAIL_SENDER_EMAIL
+```
+
+The application does not need Gmail account passwords hardcoded in the source code.
+
+A refresh token allows the application to obtain access tokens when required.
+
+**Important:** Keep OAuth credentials and refresh tokens private. Never commit them to GitHub.
+
+## 9. Reminder System
+
+One of the important features of the application is its scheduled reminder system.
+
+A user can select a contact, enter an objective, and choose a future date and time.
+
+Example:
+
+```text
+Contact: Rahul
+Objective: Discuss project requirements
+Reminder: 13 November, 2026 at 10:00 AM
+```
+
+### Reminder Workflow
+
+1. User opens the reminders page.
+2. Application loads contacts belonging to that user.
+3. User selects a contact.
+4. User enters the reminder objective and date/time.
+5. Controller validates the submitted information.
+6. Reminder is saved in the database.
+7. A scheduled background process checks for due reminders.
+8. When a reminder becomes due, the application sends an email notification.
+9. The reminder is marked as notified.
+10. A pending popup is made available to the logged-in user.
+11. The user can dismiss the reminder.
+
+### Scheduled Execution
+
+The reminder service uses Spring's `@Scheduled` annotation.
+
+```java
+@Scheduled(fixedDelay = 30000)
+@Transactional
+public void dispatchDueReminders() {
+    // Find due reminders
+    // Send notifications
+    // Update reminder status
+}
+```
+
+The task runs approximately every 30 seconds after the previous execution completes.
+
+### Time Zone Handling
+
+The application explicitly uses:
+
+```java
+ZoneId.of("Asia/Kolkata")
+```
+
+This ensures reminder comparisons use Indian Standard Time rather than depending on the server's default time zone.
+
+### Reminder Status
+
+The reminder logic uses fields such as:
+
+- `notified`: Whether notification processing has happened.
+- `popupPending`: Whether the popup is still waiting to be shown.
+
+This allows the application to manage email notifications and popup dismissal separately.
+
+### Optional SMS Integration
+
+The project includes an optional SMS service configuration.
+
+Twilio-related environment variables:
+
+```text
+TWILIO_ACCOUNT_SID
+TWILIO_AUTH_TOKEN
+TWILIO_FROM_NUMBER
+```
+
+SMS sending is conditional on the service being configured. Email remains the main reminder notification channel.
+
+## 10. Frontend Technologies
+
+### Thymeleaf
+
+Thymeleaf is used as the server-side template engine.
+
+It allows Java backend data to be displayed dynamically in HTML.
+
+Example:
+
+```html
+<p th:text="${loggedInUser.name}"></p>
+```
+
+### Tailwind CSS
+
+Tailwind CSS provides utility classes for styling.
+
+Example:
+
+```html
+<div class="bg-white p-6 rounded-xl shadow">
+    Contact Details
+</div>
+```
+
+### Flowbite
+
+Flowbite provides ready-made UI components that work with Tailwind CSS.
+
+### JavaScript
+
+JavaScript is used for browser-side interactions such as:
+
+- Form interactions.
+- Reminder popup behavior.
+- Dynamic UI updates.
+- Theme-related behavior.
+
+### Light and Dark Theme
+
+The interface supports light and dark themes using Tailwind's dark-mode classes.
+
+For example:
+
+```html
+class="bg-white text-gray-900 dark:bg-gray-800 dark:text-white"
+```
+
+## 11. Docker and Deployment on Render
+
+The application is deployed using Docker on Render.
+
+### Deployment Architecture
+
+```text
+       Developer's Computer
+                |
+                v
+          Java Source Code
+                |
+                v
+          Maven Build
+                |
+                v
+          Executable JAR
+                |
+                v
+             Docker
+                |
+                v
+             GitHub
+                |
+                v
+              Render
+                |
+                v
+         Running Application
+                |
+                v
+           TiDB Cloud
+```
+
+### Why Docker?
+
+Docker packages the application with its Java runtime environment.
+
+This helps provide a consistent deployment environment.
+
+### Dockerfile
+
+The project uses the following Dockerfile:
+
+```dockerfile
+FROM eclipse-temurin:21-jdk
+
+WORKDIR /app
+
+COPY dist/scm2.0-0.0.1-SNAPSHOT.jar /app/scm2.0-0.0.1-SNAPSHOT.jar
+
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-jar", "scm2.0-0.0.1-SNAPSHOT.jar"]
+```
+
+Explanation:
+
+- `FROM`: Uses Java 21 as the base image.
+- `WORKDIR`: Sets `/app` as the working directory.
+- `COPY`: Copies the prebuilt JAR into the container.
+- `EXPOSE`: Documents the application's container port.
+- `ENTRYPOINT`: Starts the Spring Boot application.
+
+The Render service uses port `10000`, supplied through the `SERVER_PORT` environment variable.
+
+### Render Configuration
+
+Deployment configuration:
+
+| Setting | Value |
+|---|---|
+| Platform | Render |
+| Service type | Docker Web Service |
+| Root directory | `scm2.0-main` |
+| Branch | `main` |
+| Region | Singapore |
+| Instance | Free instance |
+| Server port | `10000` |
+| Dockerfile | `Dockerfile` |
+| Database | TiDB Cloud Starter |
+
+### Why Render?
+
+Render provides cloud hosting for web applications.
+
+It can build and deploy the application from a connected GitHub repository.
+
+When a new commit is pushed to the configured branch, Render can automatically start a new deployment.
+
+### Important: Prebuilt JAR Deployment
+
+The Dockerfile copies the JAR from:
+
+```text
+dist/scm2.0-0.0.1-SNAPSHOT.jar
+```
+
+Therefore, the JAR must be rebuilt and copied into the `dist` directory before pushing changes.
+
+This is an important detail of this project's deployment process.
+
+## 12. Complete Deployment Process
+
+This is the exact deployment workflow used for the project.
+
+### Step 1: Make Code Changes
+
+Modify the required Java, HTML, CSS, JavaScript, or configuration files in IntelliJ IDEA.
+
+### Step 2: Build the Application
+
+Open the terminal in the project directory and execute:
+
+```powershell
+mvn clean package -DskipTests
+```
+
+Explanation:
+
+- `clean`: Removes previous build output.
+- `package`: Compiles the application and packages it into a JAR.
+- `-DskipTests`: Skips running tests during this build.
+
+### Step 3: Copy the New JAR
+
+```powershell
+Copy-Item target\scm2.0-0.0.1-SNAPSHOT.jar dist\scm2.0-0.0.1-SNAPSHOT.jar -Force
+```
+
+Why is this required?
+
+Because the Dockerfile reads the JAR from the `dist` directory, not directly from `target`.
+
+### Step 4: Check Git Changes
+
+```bash
+git status
+```
+
+This shows modified and untracked files.
+
+### Step 5: Stage Required Files
+
+```bash
+git add .
+```
+
+Alternatively, stage only the files you intend to commit.
+
+### Step 6: Commit Changes
+
+```bash
+git commit -m "Describe your changes"
+```
+
+### Step 7: Push to GitHub
+
+```bash
+git push origin main
+```
+
+### Step 8: Render Deployment
+
+1. Open the Render dashboard.
+2. Open the Smart Contact Manager web service.
+3. Check the Events or Deploys section.
+4. Wait for the new deployment to complete.
+5. Check the deployment logs if an error occurs.
+
+### Step 9: Verify the Live Application
+
+Open:
+
+https://smartcontactmanager-o8o4.onrender.com
+
+Test the important functionality:
+
+- Registration and login.
+- Google login.
+- Contact management.
+- Profile picture upload.
+- Reminder creation.
+- Reminder popup.
+- Email notifications.
+- Light and dark theme.
+
+## 13. Environment Variables
+
+Sensitive values are configured in the Render dashboard rather than being committed to GitHub.
+
+The following variables are relevant to the project.
+
+| Variable | Purpose |
+|---|---|
+| `MYSQL_HOST` | TiDB database host |
+| `MYSQL_PORT` | TiDB database port |
+| `MYSQL_DB` | Database name |
+| `MYSQL_USER` | Database username |
+| `MYSQL_PASSWORD` | Database password |
+| `SERVER_PORT` | Application server port |
+| `BASE_URL` | Application base URL |
+| `ACTIVE_PROFILE` | Spring profile selection |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
+| `CLOUDINARY_NAME` | Cloudinary cloud name |
+| `CLOUDINARY_API_KEY` | Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | Cloudinary API secret |
+| `GMAIL_CLIENT_ID` | Gmail API OAuth client ID |
+| `GMAIL_CLIENT_SECRET` | Gmail API OAuth client secret |
+| `GMAIL_REFRESH_TOKEN` | Gmail API refresh token |
+| `GMAIL_SENDER_EMAIL` | Email sender account |
+| `TWILIO_ACCOUNT_SID` | Optional SMS account SID |
+| `TWILIO_AUTH_TOKEN` | Optional SMS authentication token |
+| `TWILIO_FROM_NUMBER` | Optional SMS sender number |
+
+GitHub OAuth configuration is also present in the production configuration:
+
+```text
+GITHUB_CLIENT_ID
+GITHUB_CLIENT_SECRET
+```
+
+Only configure integrations that are actually enabled and being used.
+
+**Never share actual credentials in README files, screenshots, public repositories, or interviews.**
+
+## 14. Important Tools Used During Development
+
+| Tool | How it was used |
+|---|---|
+| IntelliJ IDEA | Writing and running Java/Spring Boot code |
+| Maven | Building the project and managing dependencies |
+| DBeaver | Inspecting and managing database records |
+| Docker | Containerizing the application |
+| Git | Version control |
+| GitHub | Source code hosting and deployment trigger |
+| Render Dashboard | Deployment monitoring and environment configuration |
+| TiDB Cloud Console | Creating and managing the cloud database |
+| Google Cloud Console | Configuring Google OAuth credentials |
+| Cloudinary Dashboard | Managing cloud image storage |
+| Browser Developer Tools | Debugging frontend behavior |
+
+## 15. Common Deployment Issues and Solutions
+
+### A. Database Connection Failure
+
+Possible reasons:
+
+- Incorrect database host or port.
+- Incorrect credentials.
+- SSL configuration issue.
+- Database service unavailable.
+
+Solution: Check TiDB connection details and Render environment variables.
+
+### B. Google OAuth Redirect URI Mismatch
+
+Error:
+
+```text
+Error 400: redirect_uri_mismatch
+```
+
+Reason: The callback URL configured in Google Cloud Console does not match the application's callback URL.
+
+Solution: Add the exact production callback URL to the authorized redirect URIs.
+
+### C. New Code Not Appearing on Render
+
+Possible reason: The source code was updated, but the JAR inside `dist` was not rebuilt.
+
+Solution:
+
+```powershell
+mvn clean package -DskipTests
+
+Copy-Item target\scm2.0-0.0.1-SNAPSHOT.jar dist\scm2.0-0.0.1-SNAPSHOT.jar -Force
+```
+
+Then commit and push the updated files.
+
+### D. Email Not Sending
+
+Check:
+
+- Gmail API OAuth credentials.
+- Refresh token validity.
+- Sender email configuration.
+- Application logs.
+
+Never put credentials directly in Java source code.
+
+### E. Profile Picture Not Displaying
+
+Check:
+
+- Cloudinary configuration.
+- Image upload response.
+- Profile image URL saved in the database.
+- Whether the profile image is conditionally rendered.
+
+### F. Reminder Time Difference
+
+Reason: Server and user may have different default time zones.
+
+Solution: Use an explicit application time zone:
+
+```java
+ZoneId.of("Asia/Kolkata")
+```
+
+## 16. Important Interview Questions
+
+### Q1. What is Spring Boot?
+
+Spring Boot is a Java framework built on top of the Spring Framework. It simplifies application development through auto-configuration, starter dependencies, and an embedded server.
+
+### Q2. What is ORM?
+
+ORM stands for Object Relational Mapping. It maps Java objects to relational database tables. Hibernate is the ORM implementation used in this project.
+
+### Q3. What is the difference between JPA and Hibernate?
+
+JPA is a specification that defines how Java applications interact with relational databases. Hibernate is an implementation of that specification.
+
+### Q4. Why did you use TiDB?
+
+I used TiDB Cloud Starter as a managed cloud database. It supports the MySQL protocol, which allowed me to use the existing MySQL JDBC driver and Spring Data JPA integration.
+
+### Q5. What is Spring Security?
+
+Spring Security is a framework that handles authentication and authorization. In this application, it protects private user routes and supports form-based login and OAuth authentication.
+
+### Q6. What is BCrypt?
+
+BCrypt is a password hashing algorithm used to securely store passwords. It is not reversible encryption.
+
+### Q7. What is OAuth 2.0?
+
+OAuth 2.0 is an authorization framework. In this application, Google authentication is integrated through Spring Security's OAuth2 Client support.
+
+### Q8. What is Docker?
+
+Docker is a containerization platform that packages an application and its runtime environment into a container image.
+
+### Q9. Why did you use Render?
+
+Render provides cloud hosting and GitHub-connected deployments. It allowed me to deploy my Spring Boot application without managing my own server infrastructure.
+
+### Q10. What is the purpose of Cloudinary?
+
+Cloudinary stores profile images in the cloud. The application stores the returned image URL instead of storing image files directly in the relational database.
+
+### Q11. How does the reminder system work?
+
+A user creates a reminder for a selected contact. A scheduled Spring service checks the database every 30 seconds for due reminders, sends the notification, and updates the reminder status. The application also exposes pending reminders for popup display.
+
+### Q12. Why is the JAR copied into the dist directory?
+
+The Dockerfile is configured to copy the prebuilt JAR from `dist`. Therefore, every code update requires rebuilding the JAR and copying it into that directory before deployment.
+
+---
+
+## 17. How to Explain This Project in an Interview
+
+**Short explanation (30–45 seconds):**
+
+"I developed a Smart Contact Manager using Java and Spring Boot. It is a cloud-deployed web application that allows users to register, securely authenticate, and manage their contacts. I implemented Spring Security with BCrypt password hashing and Google OAuth authentication. I used Spring Data JPA and Hibernate for database operations, with TiDB Cloud as the managed database. I also integrated Cloudinary for profile image storage and Gmail API for email notifications. One additional feature is a scheduled reminder system that checks due reminders and sends notifications. Finally, I containerized the application using Docker and deployed it on Render through a GitHub-based deployment workflow."
+
+**If the interviewer asks what you personally learned:**
+
+- Implementing layered architecture in Spring Boot.
+- Configuring authentication and authorization.
+- Integrating third-party APIs.
+- Working with relational databases and ORM.
+- Handling environment variables and production configuration.
+- Building Docker images and deploying applications.
+- Debugging production issues using deployment logs.
+
+---
+
+## 18. Future Improvements
+
+Potential improvements for a production-grade version:
+
+- Add automated unit and integration tests.
+- Introduce Flyway or Liquibase database migrations.
+- Add pagination for large contact lists.
+- Add contact search and filtering improvements.
+- Add role-based access control if multiple user roles are needed.
+- Improve logging and monitoring.
+- Add automated backup and recovery procedures.
+- Add CI checks before deployment.
+- Improve reminder delivery reliability with retry handling.
+- Add rate limiting and stronger production security controls.
+
+---
+
+## 19. Quick Project Revision
+
+| Topic | Remember |
+|---|---|
+| Language | Java 21 |
+| Backend | Spring Boot 3.2.5 |
+| Security | Spring Security + BCrypt |
+| Social Login | Google OAuth 2.0 |
+| ORM | Hibernate |
+| Data Access | Spring Data JPA |
+| Database | TiDB Cloud Starter |
+| Database Client | DBeaver |
+| Frontend | Thymeleaf, HTML, CSS, JavaScript |
+| Styling | Tailwind CSS + Flowbite |
+| Image Storage | Cloudinary |
+| Email | Gmail API |
+| Background Tasks | Spring `@Scheduled` |
+| Containerization | Docker |
+| Source Control | Git + GitHub |
+| Hosting | Render |
+| Build Tool | Maven |
+| Deployment Artifact | Executable JAR |
+
+**Remember:** Be prepared to explain the architecture, authentication flow, database connection, reminder scheduling, Gmail API integration, and Docker deployment in your own words. Understanding these flows is more valuable than memorizing the README.
